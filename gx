@@ -1,0 +1,179 @@
+--// 🔥 AutoFarm Mihawk + Sung Jin Woo (SJW Priority) 🔥
+
+local player = game:GetService("Players").LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+-- สร้าง UI
+local gui = Instance.new("ScreenGui")
+gui.Name = "FarmControlUI"
+gui.ResetOnSpawn = false
+gui.Parent = PlayerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 100)
+frame.Position = UDim2.new(0.5, -110, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BackgroundTransparency = 0.2
+frame.Parent = gui
+frame.Active = true
+frame.Draggable = true
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "⚙️ Mihawk Farm Control"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 18
+title.Parent = frame
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0.9, 0, 0, 40)
+toggleButton.Position = UDim2.new(0.05, 0, 0.45, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+toggleButton.TextColor3 = Color3.new(1, 1, 1)
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 18
+toggleButton.Text = "🔴 AutoFarm : OFF"
+toggleButton.Parent = frame
+
+getgenv().AutoFarmMihawk = false
+getgenv().gx = true
+
+local function ToggleAutoFarm(state)
+	getgenv().AutoFarmMihawk = state
+	if state then
+		toggleButton.Text = "🟢 AutoFarm : ON"
+		toggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+	else
+		toggleButton.Text = "🔴 AutoFarm : OFF"
+		toggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	end
+end
+
+toggleButton.MouseButton1Click:Connect(function()
+	ToggleAutoFarm(not getgenv().AutoFarmMihawk)
+end)
+
+-- ปรับ prompt ให้กดทันที
+for _, obj in pairs(workspace:GetDescendants()) do
+	if obj:IsA("ProximityPrompt") then
+		obj.HoldDuration = 0
+	end
+end
+
+-- เตรียม Remote
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Serverside")
+local HakiArgs = {"Server","Misc","Haki",1}
+
+local function ActivateHaki()
+	pcall(function()
+		Remotes:FireServer(unpack(HakiArgs))
+	end)
+end
+
+-- ฟังก์ชันรอ character
+local function waitForCharacter()
+	local char, hrp, humanoid
+	repeat
+		char = player.Character or player.CharacterAdded:Wait()
+		hrp = char:FindFirstChild("HumanoidRootPart")
+		humanoid = char:FindFirstChild("Humanoid")
+		task.wait(0.1)
+	until hrp and humanoid and humanoid.Health > 0
+	return char, hrp, humanoid
+end
+
+-- Auto Haki
+task.spawn(function()
+	while true do
+		local char, hrp, humanoid = waitForCharacter()
+		ActivateHaki()
+		task.wait(1)
+	end
+end)
+
+-- จุดรับเควส Mihawk
+local deathPosition = CFrame.new(
+	-30.7399998, 2.22399998, 156.429993, 
+	0.983286619, 0, 0.182064503,
+	0, 1, 0,
+	-0.182064503, 0, 0.983286619
+)
+
+-- ฟังก์ชันตีบอส
+local function AttackBoss(bossModel)
+	local char, hrp = waitForCharacter()
+	local Mon = bossModel:FindFirstChild("HumanoidRootPart")
+	local hum = bossModel:FindFirstChild("Humanoid")
+
+	if Mon and hum and hum.Health > 0 then
+		hrp.CFrame = Mon.CFrame * CFrame.new(0, 0, 5)
+		-- M1
+		Remotes:FireServer("Server", "Sword", "M1s", "Dual Dagger", 1)
+		-- Skill 1-4
+		task.wait(0.2)
+		Remotes:FireServer("Server", "Sword", "Skill1", "Dual Dagger")
+		task.wait(0.2)
+		Remotes:FireServer("Server", "Sword", "Skill2", "Dual Dagger")
+		task.wait(0.2)
+		Remotes:FireServer("Server", "Sword", "Skill3", "Dual Dagger")
+		task.wait(0.2)
+		Remotes:FireServer("Server", "Sword", "Skill4", "Dual Dagger")
+		return true
+	end
+	return false
+end
+
+-- ระบบ AutoFarm หลัก
+task.spawn(function()
+	while true do
+		if getgenv().AutoFarmMihawk and getgenv().gx then
+			pcall(function()
+				local char, hrp = waitForCharacter()
+
+				-- ✅ หา SJW ใน Rogue Town
+				local sjwArea = workspace.Main.Characters:FindFirstChild("Rogue Town")
+				local sjwBossFolder = sjwArea and sjwArea:FindFirstChild("Boss")
+				local sjwBoss = nil
+
+				if sjwBossFolder then
+					for i, v in pairs(sjwBossFolder:GetChildren()) do
+						if v.Name == "Sung Jin Woo" then
+							sjwBoss = v
+							break
+						end
+					end
+				end
+
+				-- ✅ หา Mihawk ปกติ
+				local mihawk = workspace.Main.Characters["Glacier Isle"].Mihawk:FindFirstChild("Mihawk")
+
+				-- 🥇 ถ้า SJW ยังอยู่ ให้ตี SJW ก่อน
+				if sjwBoss and sjwBoss:FindFirstChild("Humanoid") and sjwBoss.Humanoid.Health > 0 then
+					AttackBoss(sjwBoss)
+
+				-- 🥈 ถ้า SJW ตาย → วาร์ปไปรับเควส Mihawk
+				elseif sjwBoss and sjwBoss:FindFirstChild("Humanoid") and sjwBoss.Humanoid.Health <= 0 then
+					hrp.CFrame = deathPosition
+					task.wait(1)
+
+				-- 🥉 ถ้า SJW ไม่มี → ฟาร์ม Mihawk ต่อ
+				elseif mihawk and mihawk:FindFirstChild("Humanoid") and mihawk.Humanoid.Health > 0 then
+					AttackBoss(mihawk)
+
+				-- ⚰️ Mihawk ตาย → วาร์ปกลับไปรับเควส
+				elseif mihawk and mihawk:FindFirstChild("Humanoid") and mihawk.Humanoid.Health <= 0 then
+					hrp.CFrame = deathPosition
+				end
+			end)
+		end
+		task.wait(0.4)
+	end
+end)
+
+-- เริ่มเปิด AutoFarm อัตโนมัติ
+task.delay(2, function()
+	ToggleAutoFarm(true)
+end)
