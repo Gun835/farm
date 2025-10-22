@@ -1,4 +1,4 @@
---// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Full Skill) 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Back 5 Units + Full Skills) 🔥
 --// by กัน
 
 --===[ Settings ]===--
@@ -87,13 +87,13 @@ local function findEnemy(name)
 	return nil
 end
 
---===[ Attack Function (Full Skills + Haki) ]===--
+--===[ Attack Function (Full Skills + Back 5 Units) ]===--
 local function attack(target)
 	if target and target:FindFirstChild("HumanoidRootPart") then
 		local char, hrp = waitForCharacter()
 		local hrpTarget = target.HumanoidRootPart
-		-- ขยับเข้าใกล้
-		hrp.CFrame = hrpTarget.CFrame + Vector3.new(0,2,3)
+		-- อยู่ด้านหลังบอส 5 หน่วย ไม่สูงขึ้น
+		hrp.CFrame = hrpTarget.CFrame * CFrame.new(0, 0, -5)
 		task.wait(0.15)
 
 		-- โจมตีปกติ
