@@ -201,22 +201,22 @@ task.spawn(function()
     end
 end)
 
---===[ AutoFarm Tanjiro Loop + Quest Check ]===
+--===[ AutoFarm Tanjiro Loop + Quest Check + ตรวจสอบการเกิด ]===
 task.spawn(function()
     while true do
         if getgenv().AutoTanjiro then
             pcall(function()
                 local char, hrp = waitForCharacter()
                 local bossFolder = workspace.Main.Characters["Forge Isle"]:FindFirstChild("Boss")
-                if bossFolder then
-                    local tanjiro = bossFolder:FindFirstChild("Tanjiro")
-                    if tanjiro and tanjiro:FindFirstChild("Humanoid") then
-                        if tanjiro.Humanoid.Health > 0 then
-                            AttackTanjiro(tanjiro)
-                        else
-                            -- Tanjiro ตาย → วาร์ปไปรับเควส
-                            hrp.CFrame = questPositionTanjiro
-                        end
+                local tanjiro = bossFolder and bossFolder:FindFirstChild("Tanjiro")
+                
+                if tanjiro and tanjiro:FindFirstChild("Humanoid") then
+                    if tanjiro.Humanoid.Health > 0 then
+                        -- Tanjiro ยังไม่ตาย → ตีปกติ
+                        AttackTanjiro(tanjiro)
+                    else
+                        -- Tanjiro ตาย → วาร์ปไปรับเควส
+                        hrp.CFrame = questPositionTanjiro
                     end
                 end
             end)
