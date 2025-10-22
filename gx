@@ -1,232 +1,147 @@
---// 🔥 AutoFarm Slayer + Tanjiro + AutoZoom + Haki + Quest + Hold0 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down 🔥
+--// by กัน
+
+--===[ Settings ]===--
+local QUEST_CFRAME = CFrame.new(-533.615845, 11.164134, 535.633545)
+local ISLAND = "Forge Isle"
+
+--===[ Services ]===--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
-local PlayerGui = player:WaitForChild("PlayerGui")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Serverside")
-local camera = workspace.CurrentCamera
 
---===[ ตัวแปรสถานะ ]===
-getgenv().AutoSlayer = false
-getgenv().AutoTanjiro = false
-getgenv().AutoZoom = false
-
---===[ จุดรับเควส Tanjiro ]===
-local questPositionTanjiro = CFrame.new(
-    -533.615845, 11.164134, 535.633545,
-    0.766061246, -0, -0.642767608,
-    0, 1, -0,
-    0.642767608, 0, 0.766061246
-)
-
---===[ ปรับ ProximityPrompt HoldDuration = 0 ]===
-for _, obj in pairs(workspace:GetDescendants()) do
-    if obj:IsA("ProximityPrompt") then
-        obj.HoldDuration = 0
-    end
-end
-
---===[ ฟังก์ชันรอ Character ]===
-local function waitForCharacter()
-    local char,hrp,hum
-    repeat
-        char = player.Character or player.CharacterAdded:Wait()
-        hrp = char:FindFirstChild("HumanoidRootPart")
-        hum = char:FindFirstChild("Humanoid")
-        task.wait(0.1)
-    until hrp and hum and hum.Health>0
-    return char,hrp,hum
-end
-
---===[ Haki Loop อัตโนมัติ ]===
-local HakiArgs = {"Server","Misc","Haki",1}
-task.spawn(function()
-    while true do
-        local _,_,hum = waitForCharacter()
-        if hum and hum.Health>0 then
-            pcall(function() Remotes:FireServer(unpack(HakiArgs)) end)
-        end
-        task.wait(1)
-    end
-end)
-
---===[ ฟังก์ชันตี Slayer ]===
-local function AttackSlayer(slayerModel)
-    local char, hrp, hum = waitForCharacter()
-    local Mon = slayerModel:FindFirstChild("HumanoidRootPart")
-    local humMonster = slayerModel:FindFirstChild("Humanoid")
-    if Mon and humMonster and humMonster.Health>0 then
-        hrp.CFrame = Mon.CFrame * CFrame.new(0,10,10)
-        local skills = {"Skill1","Skill2","Skill3","Skill4"}
-        for i=1,#skills do
-            pcall(function() Remotes:FireServer("Server","Sword",skills[i],"Dual Dagger") end)
-            task.wait(0.2)
-        end
-        pcall(function() Remotes:FireServer("Server","Sword","M1s","Dual Dagger") end)
-        return true
-    end
-    return false
-end
-
---===[ ฟังก์ชันตี Tanjiro ]===
-local function AttackTanjiro(bossModel)
-    local char, hrp, hum = waitForCharacter()
-    local Mon = bossModel:FindFirstChild("HumanoidRootPart")
-    local humBoss = bossModel:FindFirstChild("Humanoid")
-    if Mon and humBoss and humBoss.Health>0 then
-        hrp.CFrame = Mon.CFrame * CFrame.new(0,10,10)
-        local skills = {"Skill1","Skill2","Skill3","Skill4"}
-        for i=1,#skills do
-            pcall(function() Remotes:FireServer("Server","Sword",skills[i],"Dual Dagger") end)
-            task.wait(0.2)
-        end
-        pcall(function() Remotes:FireServer("Server","Sword","M1s","Dual Dagger") end)
-        return true
-    end
-    return false
-end
-
---===[ สร้าง UI ]===
-local gui = Instance.new("ScreenGui")
+--===[ UI Setup ]===--
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "FarmUI"
 gui.ResetOnSpawn = false
-gui.Parent = PlayerGui
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,250,0,220)
-frame.Position = UDim2.new(0.5,-125,0.1,0)
-frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
-frame.BackgroundTransparency = 0.2
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 220, 0, 150)
+frame.Position = UDim2.new(0.8, 0, 0.6, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 0.1
 frame.Active = true
 frame.Draggable = true
-frame.Parent = gui
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,35)
-title.Position = UDim2.new(0,0,0,0)
-title.BackgroundTransparency = 1
-title.Text = "⚙️ Farm Control"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 20
-title.Parent = frame
-
--- ฟังก์ชันสร้างปุ่ม
-local function createButton(text,pos)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.9,0,0,40)
-    btn.Position = pos
-    btn.BackgroundColor3 = Color3.fromRGB(80,80,80)
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
-    btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 16
-    btn.Text = text
-    btn.Parent = frame
-    return btn
+local function makeButton(name, order)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(1, -20, 0, 40)
+	btn.Position = UDim2.new(0, 10, 0, (order - 1) * 45 + 10)
+	btn.Text = name
+	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 16
+	btn.AutoButtonColor = true
+	btn.BorderSizePixel = 0
+	return btn
 end
 
-local toggleSlayerBtn = createButton("🔴 Auto Slayer : OFF",UDim2.new(0.05,0,0.2,0))
-local toggleTanjiroBtn = createButton("🔴 Auto Tanjiro : OFF",UDim2.new(0.05,0,0.45,0))
-local zoomButton = createButton("🔴 AutoZoom : OFF",UDim2.new(0.05,0,0.7,0))
+local zoomBtn = makeButton("Auto Zoom ❌", 1)
+local slayerBtn = makeButton("Auto Slayer ❌", 2)
+local tanjiroBtn = makeButton("Auto Tanjiro ❌", 3)
 
-local function updateButton(button,state,onText,offText)
-    if state then
-        button.Text = onText
-        button.BackgroundColor3 = Color3.fromRGB(0,170,0)
-    else
-        button.Text = offText
-        button.BackgroundColor3 = Color3.fromRGB(80,80,80)
-    end
+--===[ Global States ]===--
+getgenv().AutoZoom = false
+getgenv().AutoSlayer = false
+getgenv().AutoTanjiro = false
+
+--===[ HoldDuration 0 ]===--
+for _, obj in pairs(workspace:GetDescendants()) do
+	if obj:IsA("ProximityPrompt") then
+		obj.HoldDuration = 0
+	end
 end
 
---===[ Toggle ปุ่ม ]===
-toggleSlayerBtn.MouseButton1Click:Connect(function()
-    getgenv().AutoSlayer = not getgenv().AutoSlayer
-    updateButton(toggleSlayerBtn,getgenv().AutoSlayer,"🟢 Auto Slayer : ON","🔴 Auto Slayer : OFF")
-end)
-
-toggleTanjiroBtn.MouseButton1Click:Connect(function()
-    getgenv().AutoTanjiro = not getgenv().AutoTanjiro
-    updateButton(toggleTanjiroBtn,getgenv().AutoTanjiro,"🟢 Auto Tanjiro : ON","🔴 Auto Tanjiro : OFF")
-
-    if getgenv().AutoTanjiro then
-        -- วาร์ปไปจุดรับเควสทันทีเมื่อเปิดฟังก์ชัน
-        local char, hrp = waitForCharacter()
-        hrp.CFrame = questPositionTanjiro
-    end
-end)
-
---===[ AutoZoom ]===
-local autoZoomConn
-local function EnableAutoZoom(state)
-    getgenv().AutoZoom = state
-    updateButton(zoomButton,state,"🟢 AutoZoom : ON","🔴 AutoZoom : OFF")
-
-    if autoZoomConn then
-        autoZoomConn:Disconnect()
-        autoZoomConn=nil
-        camera.CameraType = Enum.CameraType.Custom
-    end
-
-    if state then
-        autoZoomConn = RunService.RenderStepped:Connect(function()
-            if not getgenv().AutoZoom then return end
-            local char = player.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                camera.CameraType = Enum.CameraType.Scriptable
-                local zoom = math.min(player.CameraMaxZoomDistance or 128,100)
-                camera.CFrame = hrp.CFrame * CFrame.new(0,zoom,0) * CFrame.Angles(math.rad(-90),0,0)
-            end
-        end)
-    end
+--===[ Helpers ]===--
+local function findEnemy(name)
+	local path = workspace.Main.Characters[ISLAND]
+	for _,v in pairs(path:GetDescendants()) do
+		if v.Name == name and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
+			return v
+		end
+	end
+	return nil
 end
 
-zoomButton.MouseButton1Click:Connect(function()
-    EnableAutoZoom(not getgenv().AutoZoom)
+local function attack(target)
+	if target and target:FindFirstChild("HumanoidRootPart") then
+		player.Character:MoveTo(target.HumanoidRootPart.Position + Vector3.new(0,2,0))
+		Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
+		Remotes:FireServer("Server","Sword","Skill1","Dual Dagger")
+	end
+end
+
+local function teleportToQuest()
+	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		player.Character.HumanoidRootPart.CFrame = QUEST_CFRAME
+	end
+end
+
+--===[ Auto Zoom Top-Down ]===--
+RunService.RenderStepped:Connect(function()
+	if getgenv().AutoZoom then
+		local char = player.Character
+		if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Head") then
+			local hrp = char.HumanoidRootPart
+			local head = char.Head
+			workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+			local camPos = hrp.Position + Vector3.new(0,50,0) -- สูงสุดและตรงเหนือหัว
+			workspace.CurrentCamera.CFrame = CFrame.new(camPos, head.Position)
+		end
+	else
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+			workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+		end
+	end
 end)
 
---===[ AutoFarm Slayer Loop ]===
+--===[ Auto Slayer Loop ]===--
 task.spawn(function()
-    while true do
-        if getgenv().AutoSlayer then
-            pcall(function()
-                local char, hrp = waitForCharacter()
-                local slayerFolder = workspace.Main.Characters["Forge Isle"]:FindFirstChild("Slayer's Trainee")
-                if slayerFolder then
-                    for _,slayer in pairs(slayerFolder:GetChildren()) do
-                        if slayer.Name=="Slayer's Trainee" and slayer:FindFirstChild("Humanoid") and slayer.Humanoid.Health>0 then
-                            AttackSlayer(slayer)
-                        end
-                    end
-                end
-            end)
-        end
-        task.wait(0.4)
-    end
+	while task.wait(0.5) do
+		if getgenv().AutoSlayer then
+			local mob = findEnemy("Slayer's Trainee")
+			if mob then attack(mob) end
+		end
+	end
 end)
 
---===[ AutoFarm Tanjiro Loop + Quest Check + ตรวจสอบการเกิด ]===
+--===[ Auto Tanjiro Loop ]===--
 task.spawn(function()
-    while true do
-        if getgenv().AutoTanjiro then
-            pcall(function()
-                local char, hrp = waitForCharacter()
-                local bossFolder = workspace.Main.Characters["Forge Isle"]:FindFirstChild("Boss")
-                local tanjiro = bossFolder and bossFolder:FindFirstChild("Tanjiro")
-                
-                if tanjiro and tanjiro:FindFirstChild("Humanoid") then
-                    if tanjiro.Humanoid.Health > 0 then
-                        -- Tanjiro ยังไม่ตาย → ตีปกติ
-                        AttackTanjiro(tanjiro)
-                    else
-                        -- Tanjiro ตาย → วาร์ปไปรับเควส
-                        hrp.CFrame = questPositionTanjiro
-                    end
-                end
-            end)
-        end
-        task.wait(0.5)
-    end
+	while task.wait(0.5) do
+		if getgenv().AutoTanjiro then
+			local boss = findEnemy("Tanjiro")
+			if not boss then
+				teleportToQuest()
+			else
+				attack(boss)
+			end
+		end
+	end
+end)
+
+--===[ Buttons Functions ]===--
+zoomBtn.MouseButton1Click:Connect(function()
+	getgenv().AutoZoom = not getgenv().AutoZoom
+	zoomBtn.Text = "Auto Zoom " .. (getgenv().AutoZoom and "✅" or "❌")
+	zoomBtn.BackgroundColor3 = getgenv().AutoZoom and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+end)
+
+slayerBtn.MouseButton1Click:Connect(function()
+	getgenv().AutoSlayer = not getgenv().AutoSlayer
+	slayerBtn.Text = "Auto Slayer " .. (getgenv().AutoSlayer and "✅" or "❌")
+	slayerBtn.BackgroundColor3 = getgenv().AutoSlayer and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+end)
+
+tanjiroBtn.MouseButton1Click:Connect(function()
+	getgenv().AutoTanjiro = not getgenv().AutoTanjiro
+	tanjiroBtn.Text = "Auto Tanjiro " .. (getgenv().AutoTanjiro and "✅" or "❌")
+	tanjiroBtn.BackgroundColor3 = getgenv().AutoTanjiro and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+	if getgenv().AutoTanjiro then
+		teleportToQuest()
+	end
 end)
