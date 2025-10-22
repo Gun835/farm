@@ -1,4 +1,4 @@
---// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Updated) 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Full Skill) 🔥
 --// by กัน
 
 --===[ Settings ]===--
@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local Remotes = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Serverside")
+local camera = workspace.CurrentCamera
 
 --===[ UI Setup ]===--
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
@@ -56,7 +57,26 @@ for _, obj in pairs(workspace:GetDescendants()) do
 	end
 end
 
+--===[ Haki Function ]===--
+local HakiArgs = {"Server","Misc","Haki",1}
+local function ActivateHaki()
+	pcall(function()
+		Remotes:FireServer(unpack(HakiArgs))
+	end)
+end
+
 --===[ Helpers ]===--
+local function waitForCharacter()
+	local char, hrp, humanoid
+	repeat
+		char = player.Character or player.CharacterAdded:Wait()
+		hrp = char:FindFirstChild("HumanoidRootPart")
+		humanoid = char:FindFirstChild("Humanoid")
+		task.wait(0.1)
+	until hrp and humanoid and humanoid.Health > 0
+	return char, hrp, humanoid
+end
+
 local function findEnemy(name)
 	local path = workspace.Main.Characters[ISLAND]
 	for _,v in pairs(path:GetDescendants()) do
@@ -67,22 +87,27 @@ local function findEnemy(name)
 	return nil
 end
 
+--===[ Attack Function (Full Skills + Haki) ]===--
 local function attack(target)
 	if target and target:FindFirstChild("HumanoidRootPart") then
-		local hrp = target.HumanoidRootPart
-		local char = player.Character
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			-- Move ใกล้บอส
-			char.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0,2,3)
-			task.wait(0.1)
+		local char, hrp = waitForCharacter()
+		local hrpTarget = target.HumanoidRootPart
+		-- ขยับเข้าใกล้
+		hrp.CFrame = hrpTarget.CFrame + Vector3.new(0,2,3)
+		task.wait(0.15)
 
-			-- โจมตีปกติ
-			Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
-			task.wait(0.1)
+		-- โจมตีปกติ
+		Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
+		task.wait(0.15)
 
-			-- ใช้สกิล
-			Remotes:FireServer("Server","Sword","Skill1","Dual Dagger")
+		-- ใช้สกิล Skill1–Skill4
+		for i = 1, 4 do
+			Remotes:FireServer("Server","Sword","Skill"..i,"Dual Dagger", hrpTarget.Position)
+			task.wait(0.15)
 		end
+
+		-- เปิด Haki
+		ActivateHaki()
 	end
 end
 
@@ -99,14 +124,14 @@ RunService.RenderStepped:Connect(function()
 		if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Head") then
 			local hrp = char.HumanoidRootPart
 			local head = char.Head
-			workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+			camera.CameraType = Enum.CameraType.Scriptable
 			local camPos = hrp.Position + Vector3.new(0,50,0)
-			workspace.CurrentCamera.CFrame = CFrame.new(camPos, head.Position)
+			camera.CFrame = CFrame.new(camPos, head.Position)
 		end
 	else
 		if player.Character and player.Character:FindFirstChild("Humanoid") then
-			workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-			workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+			camera.CameraType = Enum.CameraType.Custom
+			camera.CameraSubject = player.Character:FindFirstChild("Humanoid")
 		end
 	end
 end)
@@ -116,9 +141,7 @@ task.spawn(function()
 	while task.wait(0.5) do
 		if getgenv().AutoSlayer then
 			local mob = findEnemy("Slayer's Trainee")
-			if mob then
-				attack(mob)
-			end
+			if mob then attack(mob) end
 		end
 	end
 end)
