@@ -1,4 +1,4 @@
---// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Updated) 🔥
 --// by กัน
 
 --===[ Settings ]===--
@@ -69,9 +69,20 @@ end
 
 local function attack(target)
 	if target and target:FindFirstChild("HumanoidRootPart") then
-		player.Character:MoveTo(target.HumanoidRootPart.Position + Vector3.new(0,2,0))
-		Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
-		Remotes:FireServer("Server","Sword","Skill1","Dual Dagger")
+		local hrp = target.HumanoidRootPart
+		local char = player.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			-- Move ใกล้บอส
+			char.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0,2,3)
+			task.wait(0.1)
+
+			-- โจมตีปกติ
+			Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
+			task.wait(0.1)
+
+			-- ใช้สกิล
+			Remotes:FireServer("Server","Sword","Skill1","Dual Dagger")
+		end
 	end
 end
 
@@ -89,7 +100,7 @@ RunService.RenderStepped:Connect(function()
 			local hrp = char.HumanoidRootPart
 			local head = char.Head
 			workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
-			local camPos = hrp.Position + Vector3.new(0,50,0) -- สูงสุดและตรงเหนือหัว
+			local camPos = hrp.Position + Vector3.new(0,50,0)
 			workspace.CurrentCamera.CFrame = CFrame.new(camPos, head.Position)
 		end
 	else
@@ -105,7 +116,9 @@ task.spawn(function()
 	while task.wait(0.5) do
 		if getgenv().AutoSlayer then
 			local mob = findEnemy("Slayer's Trainee")
-			if mob then attack(mob) end
+			if mob then
+				attack(mob)
+			end
 		end
 	end
 end)
@@ -115,10 +128,10 @@ task.spawn(function()
 	while task.wait(0.5) do
 		if getgenv().AutoTanjiro then
 			local boss = findEnemy("Tanjiro")
-			if not boss then
-				teleportToQuest()
-			else
+			if boss then
 				attack(boss)
+			else
+				teleportToQuest()
 			end
 		end
 	end
