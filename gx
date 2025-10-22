@@ -149,6 +149,12 @@ end)
 toggleTanjiroBtn.MouseButton1Click:Connect(function()
     getgenv().AutoTanjiro = not getgenv().AutoTanjiro
     updateButton(toggleTanjiroBtn,getgenv().AutoTanjiro,"🟢 Auto Tanjiro : ON","🔴 Auto Tanjiro : OFF")
+
+    if getgenv().AutoTanjiro then
+        -- วาร์ปไปจุดรับเควสทันทีเมื่อเปิดฟังก์ชัน
+        local char, hrp = waitForCharacter()
+        hrp.CFrame = questPositionTanjiro
+    end
 end)
 
 --===[ AutoZoom ]===
