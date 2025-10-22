@@ -1,4 +1,4 @@
---// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Back 5 Units + Full Skills) 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Front 5 Units + Auto Haki + Resilient) 🔥
 --// by กัน
 
 --===[ Settings ]===--
@@ -87,28 +87,30 @@ local function findEnemy(name)
 	return nil
 end
 
---===[ Attack Function (Full Skills + Back 5 Units) ]===--
+--===[ Attack Function (Front 5 Units + Skills + Haki) ]===--
 local function attack(target)
-	if target and target:FindFirstChild("HumanoidRootPart") then
-		local char, hrp = waitForCharacter()
-		local hrpTarget = target.HumanoidRootPart
-		-- อยู่ด้านหลังบอส 5 หน่วย ไม่สูงขึ้น
-		hrp.CFrame = hrpTarget.CFrame * CFrame.new(0, 0, -5)
-		task.wait(0.15)
+	pcall(function()
+		if target and target:FindFirstChild("HumanoidRootPart") then
+			local char, hrp = waitForCharacter()
+			local hrpTarget = target.HumanoidRootPart
 
-		-- โจมตีปกติ
-		Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
-		task.wait(0.15)
+			task.wait(0.15) -- วาร์ปหลัง wait เพื่อป้องกันบัค
+			hrp.CFrame = hrpTarget.CFrame * CFrame.new(0, 0, 5) -- อยู่ด้านหน้า 5 หน่วย
 
-		-- ใช้สกิล Skill1–Skill4
-		for i = 1, 4 do
-			Remotes:FireServer("Server","Sword","Skill"..i,"Dual Dagger", hrpTarget.Position)
+			-- โจมตีปกติ
+			Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
 			task.wait(0.15)
-		end
 
-		-- เปิด Haki
-		ActivateHaki()
-	end
+			-- ใช้สกิล Skill1–Skill4
+			for i = 1, 4 do
+				Remotes:FireServer("Server","Sword","Skill"..i,"Dual Dagger", hrpTarget.Position)
+				task.wait(0.15)
+			end
+
+			-- เปิด Haki
+			ActivateHaki()
+		end
+	end)
 end
 
 local function teleportToQuest()
@@ -116,6 +118,14 @@ local function teleportToQuest()
 		player.Character.HumanoidRootPart.CFrame = QUEST_CFRAME
 	end
 end
+
+--===[ Auto Haki Loop ทุก 1 วิ ]===--
+task.spawn(function()
+	while true do
+		ActivateHaki()
+		task.wait(1)
+	end
+end)
 
 --===[ Auto Zoom Top-Down ]===--
 RunService.RenderStepped:Connect(function()
@@ -138,7 +148,8 @@ end)
 
 --===[ Auto Slayer Loop ]===--
 task.spawn(function()
-	while task.wait(0.5) do
+	while true do
+		task.wait(0.5)
 		if getgenv().AutoSlayer then
 			local mob = findEnemy("Slayer's Trainee")
 			if mob then attack(mob) end
@@ -148,7 +159,8 @@ end)
 
 --===[ Auto Tanjiro Loop ]===--
 task.spawn(function()
-	while task.wait(0.5) do
+	while true do
+		task.wait(0.5)
 		if getgenv().AutoTanjiro then
 			local boss = findEnemy("Tanjiro")
 			if boss then
