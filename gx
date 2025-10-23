@@ -1,4 +1,4 @@
---// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down + TP Quest 🔁 (No CD + UI Fixed) 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down + TP Quest 🔁 (No CD + UI Fixed + Zoom & Camera Unlock) 🔥
 --// by กัน
 
 --===[ Settings ]===--
@@ -15,52 +15,50 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Serversi
 local camera = workspace.CurrentCamera
 
 --===[ Global States ]===--
-local AutoSlayer = false
-local AutoTanjiro = false
-local AutoZoom = false
-local TPQuest = false
+getgenv().AutoZoom = false
+getgenv().AutoSlayer = false
+getgenv().AutoTanjiro = false
+getgenv().TPQuest = false
 
 --===[ UI Setup ]===--
-local gui = Instance.new("ScreenGui")
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "FarmUI"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 220, 0, 200)
 frame.Position = UDim2.new(0.8, 0, 0.55, 0)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BackgroundTransparency = 0.2
 frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 0.1
 frame.Active = true
 frame.Draggable = true
-frame.ZIndex = 2
-
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
 
 local function makeButton(name, order)
 	local btn = Instance.new("TextButton", frame)
 	btn.Size = UDim2.new(1, -20, 0, 40)
-	btn.Position = UDim2.new(0, 10, 0, (order-1)*45 + 5)
+	btn.Position = UDim2.new(0, 10, 0, (order - 1) * 45 + 10)
 	btn.Text = name
 	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-	btn.TextColor3 = Color3.new(1,1,1)
+	btn.TextColor3 = Color3.new(1, 1, 1)
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 16
-	btn.BorderSizePixel = 0
 	btn.AutoButtonColor = true
-	btn.ZIndex = 3
-	local cornerBtn = Instance.new("UICorner", btn)
-	cornerBtn.CornerRadius = UDim.new(0, 10)
+	btn.BorderSizePixel = 0
 	return btn
 end
 
---===[ Buttons ]===--
-local btnAutoSlayer = makeButton("Auto Slayer ❌", 1)
-local btnTanjiro = makeButton("Auto Tanjiro ❌", 2)
-local btnZoom = makeButton("Top-Down Zoom ❌", 3)
-local btnTPQuest = makeButton("Teleport Quest ❌", 4)
+local zoomBtn = makeButton("Auto Zoom ❌", 1)
+local slayerBtn = makeButton("Auto Slayer ❌", 2)
+local tanjiroBtn = makeButton("Auto Tanjiro ❌", 3)
+local tpBtn = makeButton("TP Quest 🔁 ❌", 4)
+
+--===[ HoldDuration 0 ]===--
+for _, obj in pairs(workspace:GetDescendants()) do
+	if obj:IsA("ProximityPrompt") then
+		obj.HoldDuration = 0
+	end
+end
 
 --===[ Haki Function ]===--
 local HakiArgs = {"Server","Misc","Haki",1}
@@ -127,57 +125,68 @@ end
 --===[ Auto Loops ]===--
 task.spawn(function()
 	while true do
-		if AutoSlayer then
+		task.wait(0.5)
+		if getgenv().AutoSlayer then
 			local mob = findEnemy("Slayer's Trainee")
 			if mob then attack(mob) end
 		end
-		if AutoTanjiro then
+		if getgenv().AutoTanjiro then
 			local boss = findEnemy("Tanjiro")
-			if boss then attack(boss)
-			else teleportToTanjiro() end
+			if boss then
+				attack(boss)
+			else
+				teleportToTanjiro()
+			end
 		end
-		if TPQuest then teleportToQuest() end
+		if getgenv().TPQuest then
+			teleportToQuest()
+		end
 		ActivateHaki()
-		task.wait(0.5)
 	end
 end)
 
---===[ Auto Zoom ]===--
+--===[ Auto Zoom Fixed + Camera Unlock ]===--
 RunService.RenderStepped:Connect(function()
-	if AutoZoom then
-		local char = player.Character
-		if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Head") then
+	local char = player.Character
+	if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char:FindFirstChild("Head") then
+		if getgenv().AutoZoom then
+			-- เปิด Top-Down Zoom
 			camera.CameraType = Enum.CameraType.Scriptable
 			local camPos = char.HumanoidRootPart.Position + Vector3.new(0,50,0)
 			camera.CFrame = CFrame.new(camPos, char.Head.Position)
 		else
+			-- ปิด Auto Zoom กลับปกติ
 			camera.CameraType = Enum.CameraType.Custom
-			camera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+			camera.CameraSubject = char.Humanoid
+			-- ปล่อยให้ผู้เล่นหมุนกล้องเอง ไม่ตั้ง CFrame อีกต่อไป
 		end
 	end
 end)
 
 --===[ Buttons Connect ]===--
-btnAutoSlayer.MouseButton1Click:Connect(function()
-	AutoSlayer = not AutoSlayer
-	btnAutoSlayer.Text = "Auto Slayer " .. (AutoSlayer and "✅" or "❌")
-	btnAutoSlayer.BackgroundColor3 = AutoSlayer and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+zoomBtn.MouseButton1Click:Connect(function()
+	getgenv().AutoZoom = not getgenv().AutoZoom
+	zoomBtn.Text = "Auto Zoom " .. (getgenv().AutoZoom and "✅" or "❌")
+	zoomBtn.BackgroundColor3 = getgenv().AutoZoom and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
 end)
 
-btnTanjiro.MouseButton1Click:Connect(function()
-	AutoTanjiro = not AutoTanjiro
-	btnTanjiro.Text = "Auto Tanjiro " .. (AutoTanjiro and "✅" or "❌")
-	btnTanjiro.BackgroundColor3 = AutoTanjiro and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+slayerBtn.MouseButton1Click:Connect(function()
+	getgenv().AutoSlayer = not getgenv().AutoSlayer
+	slayerBtn.Text = "Auto Slayer " .. (getgenv().AutoSlayer and "✅" or "❌")
+	slayerBtn.BackgroundColor3 = getgenv().AutoSlayer and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
 end)
 
-btnZoom.MouseButton1Click:Connect(function()
-	AutoZoom = not AutoZoom
-	btnZoom.Text = "Top-Down Zoom " .. (AutoZoom and "✅" or "❌")
-	btnZoom.BackgroundColor3 = AutoZoom and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+tanjiroBtn.MouseButton1Click:Connect(function()
+	getgenv().AutoTanjiro = not getgenv().AutoTanjiro
+	tanjiroBtn.Text = "Auto Tanjiro " .. (getgenv().AutoTanjiro and "✅" or "❌")
+	tanjiroBtn.BackgroundColor3 = getgenv().AutoTanjiro and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+	if getgenv().AutoTanjiro then
+		teleportToTanjiro()
+	end
 end)
 
-btnTPQuest.MouseButton1Click:Connect(function()
-	TPQuest = not TPQuest
-	btnTPQuest.Text = "Teleport Quest " .. (TPQuest and "✅" or "❌")
-	btnTPQuest.BackgroundColor3 = TPQuest and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
+tpBtn.MouseButton1Click:Connect(function()
+	getgenv().TPQuest = not getgenv().TPQuest
+	tpBtn.Text = "TP Quest 🔁 " .. (getgenv().TPQuest and "✅" or "❌")
+	tpBtn.BackgroundColor3 = getgenv().TPQuest and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
 end)
