@@ -1,8 +1,8 @@
---// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down (Front 5 Units + Auto Haki + Resilient) 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down + TP Quest 🔁 (No CD) 🔥
 --// by กัน
 
 --===[ Settings ]===--
-local QUEST_CFRAME = CFrame.new(-533.615845, 11.164134, 535.633545)
+local QUEST_CFRAME = CFrame.new(-460.4409484863281, 10.964144706726074, 487.0525207519531) -- ✅ จุดใหม่
 local ISLAND = "Forge Isle"
 
 --===[ Services ]===--
@@ -19,8 +19,8 @@ gui.Name = "FarmUI"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 150)
-frame.Position = UDim2.new(0.8, 0, 0.6, 0)
+frame.Size = UDim2.new(0, 220, 0, 200) -- ✅ ความยาว UI = 200
+frame.Position = UDim2.new(0.8, 0, 0.55, 0)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.BackgroundTransparency = 0.1
@@ -30,7 +30,7 @@ frame.Draggable = true
 local function makeButton(name, order)
 	local btn = Instance.new("TextButton", frame)
 	btn.Size = UDim2.new(1, -20, 0, 40)
-	btn.Position = UDim2.new(0, 10, 0, (order - 1) * 45 + 10)
+	btn.Position = UDim2.new(0, 10, 0, (order - 1) * 45 + 5)
 	btn.Text = name
 	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 	btn.TextColor3 = Color3.new(1, 1, 1)
@@ -44,11 +44,13 @@ end
 local zoomBtn = makeButton("Auto Zoom ❌", 1)
 local slayerBtn = makeButton("Auto Slayer ❌", 2)
 local tanjiroBtn = makeButton("Auto Tanjiro ❌", 3)
+local tpBtn = makeButton("TP Quest 🔁 ❌", 4)
 
 --===[ Global States ]===--
 getgenv().AutoZoom = false
 getgenv().AutoSlayer = false
 getgenv().AutoTanjiro = false
+getgenv().TPQuest = false
 
 --===[ HoldDuration 0 ]===--
 for _, obj in pairs(workspace:GetDescendants()) do
@@ -87,39 +89,33 @@ local function findEnemy(name)
 	return nil
 end
 
---===[ Attack Function (Front 5 Units + Skills + Haki) ]===--
+--===[ Attack Function ]===--
 local function attack(target)
 	pcall(function()
 		if target and target:FindFirstChild("HumanoidRootPart") then
 			local char, hrp = waitForCharacter()
 			local hrpTarget = target.HumanoidRootPart
-
-			task.wait(0.15) -- วาร์ปหลัง wait เพื่อป้องกันบัค
-			hrp.CFrame = hrpTarget.CFrame * CFrame.new(0, 0, 5) -- อยู่ด้านหน้า 5 หน่วย
-
-			-- โจมตีปกติ
+			task.wait(0.15)
+			hrp.CFrame = hrpTarget.CFrame * CFrame.new(0, 0, 5)
 			Remotes:FireServer("Server","Sword","M1s","Dual Dagger",1)
 			task.wait(0.15)
-
-			-- ใช้สกิล Skill1–Skill4
 			for i = 1, 4 do
 				Remotes:FireServer("Server","Sword","Skill"..i,"Dual Dagger", hrpTarget.Position)
 				task.wait(0.15)
 			end
-
-			-- เปิด Haki
 			ActivateHaki()
 		end
 	end)
 end
 
+--===[ Teleport Function ]===--
 local function teleportToQuest()
 	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 		player.Character.HumanoidRootPart.CFrame = QUEST_CFRAME
 	end
 end
 
---===[ Auto Haki Loop ทุก 1 วิ ]===--
+--===[ Auto Haki Loop ]===--
 task.spawn(function()
 	while true do
 		ActivateHaki()
@@ -127,7 +123,7 @@ task.spawn(function()
 	end
 end)
 
---===[ Auto Zoom Top-Down ]===--
+--===[ Auto Zoom ]===--
 RunService.RenderStepped:Connect(function()
 	if getgenv().AutoZoom then
 		local char = player.Character
@@ -172,7 +168,17 @@ task.spawn(function()
 	end
 end)
 
---===[ Buttons Functions ]===--
+--===[ TP Quest Loop (No CD) ]===--
+task.spawn(function()
+	while true do
+		task.wait(0.2)
+		if getgenv().TPQuest then
+			teleportToQuest()
+		end
+	end
+end)
+
+--===[ Buttons ]===--
 zoomBtn.MouseButton1Click:Connect(function()
 	getgenv().AutoZoom = not getgenv().AutoZoom
 	zoomBtn.Text = "Auto Zoom " .. (getgenv().AutoZoom and "✅" or "❌")
@@ -192,4 +198,10 @@ tanjiroBtn.MouseButton1Click:Connect(function()
 	if getgenv().AutoTanjiro then
 		teleportToQuest()
 	end
+end)
+
+tpBtn.MouseButton1Click:Connect(function()
+	getgenv().TPQuest = not getgenv().TPQuest
+	tpBtn.Text = "TP Quest 🔁 " .. (getgenv().TPQuest and "✅" or "❌")
+	tpBtn.BackgroundColor3 = getgenv().TPQuest and Color3.fromRGB(0,150,0) or Color3.fromRGB(70,70,70)
 end)
