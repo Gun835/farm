@@ -1,4 +1,4 @@
---// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down + TP Quest 🔁 (No CD + UI Fixed + Zoom & Camera Unlock) 🔥
+--// 🔥 AutoFarm Slayer + Tanjiro + Zoom Top-Down + TP Quest 🔁 (Auto Haki Every 1s + UI Fixed + Zoom & Camera Unlock) 🔥
 --// by กัน
 
 --===[ Settings ]===--
@@ -60,13 +60,14 @@ for _, obj in pairs(workspace:GetDescendants()) do
 	end
 end
 
---===[ Haki Function ]===--
-local HakiArgs = {"Server","Misc","Haki",1}
-local function ActivateHaki()
-	pcall(function()
-		Remotes:FireServer(unpack(HakiArgs))
-	end)
-end
+--===[ 🌀 Auto Haki (Every 1 Second) ]===--
+task.spawn(function()
+	while task.wait(1) do
+		pcall(function()
+			Remotes:FireServer("Server", "Misc", "Haki", 1)
+		end)
+	end
+end)
 
 --===[ Helpers ]===--
 local function waitForCharacter()
@@ -104,7 +105,6 @@ local function attack(target)
 				Remotes:FireServer("Server","Sword","Skill"..i,"Dual Dagger", hrpTarget.Position)
 				task.wait(0.15)
 			end
-			ActivateHaki()
 		end
 	end)
 end
@@ -141,7 +141,6 @@ task.spawn(function()
 		if getgenv().TPQuest then
 			teleportToQuest()
 		end
-		ActivateHaki()
 	end
 end)
 
@@ -150,15 +149,12 @@ RunService.RenderStepped:Connect(function()
 	local char = player.Character
 	if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char:FindFirstChild("Head") then
 		if getgenv().AutoZoom then
-			-- เปิด Top-Down Zoom
 			camera.CameraType = Enum.CameraType.Scriptable
 			local camPos = char.HumanoidRootPart.Position + Vector3.new(0,50,0)
 			camera.CFrame = CFrame.new(camPos, char.Head.Position)
 		else
-			-- ปิด Auto Zoom กลับปกติ
 			camera.CameraType = Enum.CameraType.Custom
 			camera.CameraSubject = char.Humanoid
-			-- ปล่อยให้ผู้เล่นหมุนกล้องเอง ไม่ตั้ง CFrame อีกต่อไป
 		end
 	end
 end)
